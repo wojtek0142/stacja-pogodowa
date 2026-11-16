@@ -1,0 +1,23 @@
+[project]
+name = "weather-station"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Wojciech Dec", email = "115294096+wojtek0142@users.noreply.github.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.162.5",
+    "sqlalchemy>=2.1.8",
+]
+
+[project.scripts]
+weather-station = "weather_station:main"
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14.0"]
+build-backend = "uv_build"
+
+[tool.fastapi]
+entrypoint = "src.weather_station.main:app"

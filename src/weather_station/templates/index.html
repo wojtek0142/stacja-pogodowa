@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Stacja pogodowa</title>
+        <meta name="description" content="Dashboard">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-yEPZ7jP9S0QKiUQ0m3jjsO4ProIW7wvR9gXkI7JOGa2XVsw53Yke2bsdkBbjmmiX" crossorigin="anonymous">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/static/css/main.css">
+        <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='icons/arrow-down-right.svg') }}">
+        <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='icons/arrow-up-right.svg') }}">
+
+    </head>
+    <body>
+        <div class="container my-5">
+            <div class="row justify-content-between">
+                <div class="col-8">
+                    <h1>Stacja pogodowa </h1>
+                    <span class="badge text-bg-secondary">Ostatnia aktualizacja: 4 sekundy temu</span>
+                </div>
+                <div class="col-4 text-end">
+                    <button type="button" class="btn btn-primary">Pobierz csv</button>
+                </div>
+            </div>
+        </div>
+        <div class="container my-5">
+            <div class="row g-2">
+                <div class="col-12 col-md-4">
+                    <div class="card text-bg-primary h-100" >
+                        <div class="row g-0 align-items-center">
+                            <div class="col-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">Temperatura</h5>
+                                    {% if measurements %}
+                                        <h3 class="card-text">{{ measurements.temperature }} °C</h3>
+                                    {% else %}
+                                        <h3 class="card-text">Brak danych</h3>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <span>+0.3°C/hr</span>
+                                <img src="{{ url_for('static', path='icons/arrow-up-right.svg') }}"
+                                    alt="Arrow up"
+                                    height="30"
+                                    width="30"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card text-bg-primary h-100" >
+                        <div class="row g-0 align-items-center">
+                            <div class="col-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">Wilgotność</h5>
+                                    {% if measurements %}
+                                        <h3 class="card-text">{{ measurements.humidity }} %</h3>
+                                    {% else %}
+                                        <h3 class="card-text">Brak danych</h3>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <span>-1.2 p.p/hr</span>
+                                <img src="{{ url_for('static', path='icons/arrow-down-right.svg') }}"
+                                    alt="Arrow down"
+                                    height="30"
+                                    width="30"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card text-bg-info h-100" >
+                        <div class="card-body">
+                            <h5 class="card-title">Punkt rosy</h5>
+                            {% if dew_point %}
+                                <h3 class="card-text">{{ dew_point }} %</h3>
+                            {% else %}
+                                <h3 class="card-text">Brak danych</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                        <span class="fw-semibold">Temperatura (24h)</span>
+                        <div>
+                            <span class="badge text-bg-secondary ">
+                            Min: <strong id="temp-min">14</strong>°C
+                            </span>
+                            <span class="badge text-bg-primary">
+                            Śr: <strong id="temp-avg">18</strong>°C
+                            </span>
+                            <span class="badge text-bg-secondary">
+                            Max: <strong id="temp-max">21</strong>°C
+                            </span>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card ">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold">Wilgotność (24h)</span>
+                            <div>
+                                <span class="badge text-bg-secondary ">
+                                Min: <strong id="hum-min">37</strong>%
+                                </span>
+                                <span class="badge text-bg-primary">
+                                Śr: <strong id="hum-avg">40</strong>%
+                                </span>
+                                <span class="badge text-bg-secondary">
+                                Max: <strong id="hum-max">45</strong>%
+                                </span>
+                            </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        <div class="btn-group" role="group" aria-label="Wybór wykresu">
+            <button type="button" class="btn btn-primary">24H</button>
+            <button type="button" class="btn btn-primary">7 dni</button>
+            <button type="button" class="btn btn-primary">30 dni</button>
+        </div>
+        <canvas id="myChart" style="width:100%;max-width:700px"></canvas>
+
+
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/js/bootstrap.bundle.min.js" integrity="sha384-WyOxWvTyr1QaMPfiPJSv76iReVthorl5uWlFtZPyK0IEB0hGzo9y5Bp9mYanr8Bu" crossorigin="anonymous">
+        </script>
+        <script
+        src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1">
+        </script>   
+        <script src="{{ url_for('static', path='js/script.js') }}"></script>
+
+    </body>
+</html>
