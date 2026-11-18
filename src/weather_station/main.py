@@ -51,10 +51,10 @@ def home(request: Request, db: Annotated[Session, Depends(get_db)]):
     for measurement in results_24H:
         temperatures.append(measurement.temperature)
         humidities.append(measurement.humidity)
-    temperature_stats["avg"] = sum(temperatures)/len(temperatures)
+    temperature_stats["avg"] = round(sum(temperatures)/len(temperatures),2)
     temperature_stats["min"] = min(temperatures)
     temperature_stats["max"] = max(temperatures)
-    humidity_stats["avg"] = sum(humidities)/len(humidities)
+    humidity_stats["avg"] = round(sum(humidities)/len(humidities),2)
     humidity_stats["min"] = min(humidities)
     humidity_stats["max"] = max(humidities)
     if latest:
