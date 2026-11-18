@@ -1,4 +1,3 @@
-from sqlalchemy import select
 from .database import Base, engine, get_db, SessionLocal
 import time
 from . import models

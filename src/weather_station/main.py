@@ -2,14 +2,14 @@
 from fastapi import Depends, FastAPI, Query, Request, HTTPException, status
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from datetime import datetime
+from datetime import datetime, timezone,timedelta, UTC
 import random
 from pathlib import Path
 from .schemas import ReadingBase
 from typing import Annotated
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from . import models
+from .models import Measurement 
 from .database import Base, engine, get_db
 from math import log
 
@@ -29,41 +29,38 @@ measurements: list[dict] = [
     {"id": 5,"temperature": 22.9, "humidity": 44.8, "measured_at": datetime(2026, 11, 12, 12, 0)},
 ]
 
+
 @app.get("/", include_in_schema=False)
 def home(request: Request, db: Annotated[Session, Depends(get_db)]):
     result = db.execute(
-            select(models.Measurement).order_by(models.Measurement.measured_at.desc()).limit(1)
+            select(Measurement).order_by(Measurement.measured_at.desc()).limit(1)
         )
     latest = result.scalars().first()
     dew_point = None
     if latest:
-        c = 243.04
-        b = 17.625
-        gamma = log(latest.humidity/100) + (b * latest.temperature / ( c + latest.temperature))
-        dew_point = c * gamma / (b - gamma)
-        dew_point = round(dew_point, 1)
-    return templates.TemplateResponse(request, "index.html", {"measurements": latest, "dew_point":dew_point})
+        calc_dew_point(latest)
+    test_date_milisec = int(datetime.now(timezone.utc).timestamp() * 1000)
+    return templates.TemplateResponse(request, "index.html", {"measurements": measurements, "dew_point":dew_point, "measured_at": test_date_milisec})
 
 
-@app.get("/api/readings", response_model=ReadingBase)
-def get_reading(db: Annotated[Session, Depends(get_db)]):
+@app.get("/api/measurements/", response_model=list[ReadingBase])
+def get_readings(days: int,db: Annotated[Session, Depends(get_db)]):
+    since = datetime.now(UTC) - timedelta(days=days)
     result = db.execute(
-        select(models.Measurement).order_by(models.Measurement.measured_at.asc())
+        select(Measurement).where(Measurement.measured_at >= since)
+        .order_by(Measurement.measured_at.asc())
     )
-    latest = result.scalars().first()
+    latest = result.scalars().all()
     if latest:
         return latest
+    raise HTTPException(status_code=status.HTTP_200_OK, detail="No readings")
 
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No readings")
 
 
-# def background_task(sensor, lcd):
-#     while True:
-#         humi, temp = read_values(sensor)
-#         print_lcd(temp, humi, lcd)
-#         time.sleep(10)
-
-def sensor_test():
-    humi = random.randint(38,59)
-    temp = random.randint(15,30)
-    return humi, temp
+def calc_dew_point(latest: Measurement) -> float:
+    c = 243.04
+    b = 17.625
+    gamma = log(latest.humidity/100) + (b * latest.temperature / ( c + latest.temperature))
+    dew_point = c * gamma / (b - gamma)
+    dew_point = round(dew_point, 1)
+    return dew_point
