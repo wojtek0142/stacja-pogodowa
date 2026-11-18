@@ -9,7 +9,7 @@ function calculate_time_diff(){
 calculate_time_diff();
 setInterval(calculate_time_diff, 10000);
 
-const range_buttons = document.querySelectorAll("range");
+const range_buttons = document.querySelectorAll(".range");
 range_buttons.forEach(button => {
     button.addEventListener('click', async () => {
         const query_param = button.getAttribute("data-range") 
