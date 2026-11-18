@@ -14,7 +14,7 @@ range_buttons.forEach(button => {
     button.addEventListener('click', async () => {
         const query_param = button.getAttribute("data-range") 
         try {
-            const response = await fetch(`/api/readings/${query_param}`, {
+            const response = await fetch(`/api/readings/?days=${query_param}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
