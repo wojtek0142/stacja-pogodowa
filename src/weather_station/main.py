@@ -53,11 +53,7 @@ def get_readings(days: int,db: Annotated[Session, Depends(get_db)]):
         select(Measurement).where(Measurement.measured_at >= since)
         .order_by(Measurement.measured_at.asc())
     )
-    latest = result.scalars().all()
-    if latest:
-        return latest
-    raise HTTPException(status_code=status.HTTP_200_OK, detail="No readings")
-
+    return result.scalars().all()
 
 
 def calc_dew_point(latest: Measurement) -> float:
