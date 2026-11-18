@@ -37,10 +37,11 @@ def home(request: Request, db: Annotated[Session, Depends(get_db)]):
         )
     latest = result.scalars().first()
     dew_point = None
+    measured_time = None
     if latest:
-        calc_dew_point(latest)
-    test_date_milisec = int(datetime.now(timezone.utc).timestamp() * 1000)
-    return templates.TemplateResponse(request, "index.html", {"measurements": measurements, "dew_point":dew_point, "measured_at": test_date_milisec})
+        dew_point = calc_dew_point(latest)
+        measured_time = int(latest.measured_at.timestamp() * 1000)
+    return templates.TemplateResponse(request, "index.html", {"measurements": latest, "dew_point":dew_point, "measured_at": measured_time})
 
 
 @app.get("/api/measurements/", response_model=list[ReadingBase])
