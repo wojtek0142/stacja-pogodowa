@@ -35,7 +35,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title">Temperatura</h5>
                                     {% if measurements %}
-                                        <h3 class="card-text">{{ measurements[1].temperature }} °C</h3>
+                                        <h3 class="card-text">{{ measurements.temperature }} °C</h3>
                                     {% else %}
                                         <h3 class="card-text">Brak danych</h3>
                                     {% endif %}
