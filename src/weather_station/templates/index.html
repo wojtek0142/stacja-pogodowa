@@ -81,7 +81,7 @@
                         <div class="card-body">
                             <h5 class="card-title">Punkt rosy</h5>
                             {% if dew_point %}
-                                <h3 class="card-text">{{ dew_point }} %</h3>
+                                <h3 class="card-text">{{ dew_point }} °C</h3>
                             {% else %}
                                 <h3 class="card-text">Brak danych</h3>
                             {% endif %}
@@ -96,13 +96,13 @@
                         <span class="fw-semibold">Temperatura (24h)</span>
                         <div>
                             <span class="badge text-bg-secondary ">
-                            Min: <strong id="temp-min">14</strong>°C
+                            Min: <strong id="temp-min">{{ temperature_stats.min }}</strong>°C
                             </span>
                             <span class="badge text-bg-primary">
-                            Śr: <strong id="temp-avg">18</strong>°C
+                            Śr: <strong id="temp-avg">{{ temperature_stats.avg }}</strong>°C
                             </span>
                             <span class="badge text-bg-secondary">
-                            Max: <strong id="temp-max">21</strong>°C
+                            Max: <strong id="temp-max">{{ temperature_stats.max }}</strong>°C
                             </span>
                         </div>
                         </div>
@@ -114,13 +114,13 @@
                             <span class="fw-semibold">Wilgotność (24h)</span>
                             <div>
                                 <span class="badge text-bg-secondary ">
-                                Min: <strong id="hum-min">37</strong>%
+                                Min: <strong id="hum-min">{{ humidity_stats.min }}</strong>%
                                 </span>
                                 <span class="badge text-bg-primary">
-                                Śr: <strong id="hum-avg">40</strong>%
+                                Śr: <strong id="hum-avg">{{ humidity_stats.avg }}</strong>%
                                 </span>
                                 <span class="badge text-bg-secondary">
-                                Max: <strong id="hum-max">45</strong>%
+                                Max: <strong id="hum-max">{{ humidity_stats.max }}</strong>%
                                 </span>
                             </div>
                     </div>

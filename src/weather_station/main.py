@@ -32,18 +32,38 @@ measurements: list[dict] = [
 
 @app.get("/", include_in_schema=False)
 def home(request: Request, db: Annotated[Session, Depends(get_db)]):
-    result = db.execute(
+    result_last = db.execute(
             select(Measurement).order_by(Measurement.measured_at.desc()).limit(1)
         )
-    latest = result.scalars().first()
+    latest = result_last.scalars().first()
     dew_point = None
     measured_time = None
+    since = datetime.now(UTC) - timedelta(days=1)
+    result_24H = db.execute(
+            select(Measurement).where(Measurement.measured_at >= since)
+            .order_by(Measurement.measured_at.asc())
+        )
+    temperature_stats: dict = {}
+    temperatures = []
+    humidity_stats: dict = {}
+    humidities = []
+    results_24H = result_24H.scalars().all()
+    for measurement in results_24H:
+        temperatures.append(measurement.temperature)
+        humidities.append(measurement.humidity)
+    temperature_stats["avg"] = sum(temperatures)/len(temperatures)
+    temperature_stats["min"] = min(temperatures)
+    temperature_stats["max"] = max(temperatures)
+    humidity_stats["avg"] = sum(humidities)/len(humidities)
+    humidity_stats["min"] = min(humidities)
+    humidity_stats["max"] = max(humidities)
     if latest:
         dew_point = calc_dew_point(latest)
         if latest.measured_at.tzinfo is None:
             latest.measured_at = latest.measured_at.replace(tzinfo=UTC)
         measured_time = int(latest.measured_at.timestamp() * 1000)
-    return templates.TemplateResponse(request, "index.html", {"measurements": latest, "dew_point":dew_point, "measured_at": measured_time})
+    
+    return templates.TemplateResponse(request, "index.html", {"measurements": latest, "dew_point":dew_point, "measured_at": measured_time, "temperature_stats": temperature_stats, "humidity_stats": humidity_stats})
 
 
 @app.get("/api/measurements/", response_model=list[ReadingBase])
