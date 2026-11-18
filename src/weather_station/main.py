@@ -40,6 +40,8 @@ def home(request: Request, db: Annotated[Session, Depends(get_db)]):
     measured_time = None
     if latest:
         dew_point = calc_dew_point(latest)
+        if latest.measured_at.tzinfo is None:
+            latest.measured_at = latest.measured_at.replace(tzinfo=UTC)
         measured_time = int(latest.measured_at.timestamp() * 1000)
     return templates.TemplateResponse(request, "index.html", {"measurements": latest, "dew_point":dew_point, "measured_at": measured_time})
 
