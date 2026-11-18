@@ -22,7 +22,7 @@ range_buttons.forEach(button => {
             });
             if (response.ok) {
                 const data = await response.json();
-                listaObiektow.forEach(obiekt => {
+                data.forEach(obiekt => {
                     console.log(obiekt);
                 });
 
