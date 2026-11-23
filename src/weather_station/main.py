@@ -41,9 +41,10 @@ def home(request: Request, db: Annotated[Session, Depends(get_db)]):
     temperature_stats, humidity_stats = calc_statistics_24H(results_24H)
     start = datetime.now(UTC) - timedelta(minutes=65)
     end = datetime.now(UTC) - timedelta(minutes=60)
-    hour_before_avg = db.execute(
+    hour_before = db.execute(
         select(Measurement).where(Measurement.measured_at >= start).where(Measurement.measured_at <= end)
-    ).all()
+    )
+    hour_before_avg = hour_before.scalars().all()
 
     if latest:
         dew_point = calc_dew_point(latest)
