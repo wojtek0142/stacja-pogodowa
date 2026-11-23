@@ -141,11 +141,16 @@ const myChart = new Chart(ctx, {
       x: {  
         type: 'time',
         time: {
-            tooltipFormat
+            unit: 'hour',
+            displayFormats: {
+                hour:'HH:mm',
+                day: 'dd.MM'
+            },
+            tooltipFormat: 'dd.MM.yyyy HH:mm'
         },
         title: {
             display: true,
-            text: 'Data'
+            text: 'Data i godzina'
         }
     },
     y: {
