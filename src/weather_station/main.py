@@ -21,13 +21,6 @@ app = FastAPI()
 templates = Jinja2Templates(directory= Path(__file__).parent / "templates")
 app.mount("/static", StaticFiles(directory= Path(__file__).parent / "static"), name="static")
 
-measurements: list[dict] = [
-    {"id": 1, "temperature": 21.5, "humidity": 45.0, "measured_at": datetime(2026, 11, 12, 8, 0)},
-    {"id": 2,"temperature": 22.1, "humidity": 43.2, "measured_at": datetime(2026, 11, 12, 9, 0)},
-    {"id": 3,"temperature": 23.8, "humidity": 41.7, "measured_at": datetime(2026, 11, 12, 10, 0)},
-    {"id": 4,"temperature": 24.3, "humidity": 40.5, "measured_at": datetime(2026, 11, 12, 11, 0)},
-    {"id": 5,"temperature": 22.9, "humidity": 44.8, "measured_at": datetime(2026, 11, 12, 12, 0)},
-]
 
 
 @app.get("/", include_in_schema=False)
