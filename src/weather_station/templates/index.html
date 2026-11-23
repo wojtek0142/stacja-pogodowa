@@ -42,7 +42,26 @@
                                 </div>
                             </div>
                             <div class="col-4">
-                                <span>+0.3°C/hr</span>
+                                {% if temp_trend %}
+                                    <span>{{ temp_trend }} °C/hr</span>
+                                    {% if temp_trend > 0 %}
+                                        <img src="{{ url_for('static', path='icons/arrow-up-right.svg') }}"
+                                            alt="Arrow up"
+                                            height="30"
+                                            width="30"
+                                        />
+                                    {% elif temp_trend < 0 %}
+                                        <img src="{{ url_for('static', path='icons/arrow-down-right.svg') }}"
+                                            alt="Arrow down"
+                                            height="30"
+                                            width="30"
+                                        />
+                                    {% else %}
+
+                                    {% endif %}
+                                {% else %}
+                                    <span>Brak danych</span>
+                                {% endif %}
                                 <img src="{{ url_for('static', path='icons/arrow-up-right.svg') }}"
                                     alt="Arrow up"
                                     height="30"
@@ -66,7 +85,26 @@
                                 </div>
                             </div>
                             <div class="col-4">
-                                <span>-1.2 p.p/hr</span>
+                                {% if humidity_trend %}
+                                    <span>{{ humidity_trend }} p.p/hr</span>
+                                    {% if humidity_trend > 0 %}
+                                        <img src="{{ url_for('static', path='icons/arrow-up-right.svg') }}"
+                                            alt="Arrow up"
+                                            height="30"
+                                            width="30"
+                                        />
+                                    {% elif temp_trend < 0 %}
+                                        <img src="{{ url_for('static', path='icons/arrow-down-right.svg') }}"
+                                            alt="Arrow down"
+                                            height="30"
+                                            width="30"
+                                        />
+                                    {% else %}
+                                        
+                                    {% endif %}
+                                {% else %}
+                                    <span>Brak danych</span>
+                                {% endif %}
                                 <img src="{{ url_for('static', path='icons/arrow-down-right.svg') }}"
                                     alt="Arrow down"
                                     height="30"

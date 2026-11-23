@@ -9,12 +9,12 @@ Base.metadata.create_all(bind=engine)
 sensor = seeed_dht.DHT("11", 12)
 lcd = JHD1802()
 
-def print_lcd(temp: int, humi: int, lcd):
+def print_lcd(temp: float, humi: float, lcd):
     lcd.clear()
     lcd.backlight(True)
     lcd.setCursor(0, 0)
     lcd.write(f"Temp: {temp} C")
-    lcd.setCursor(1,0)
+    lcd.setCursor(0,1)
     lcd.write(f"Wilgotnosc: {humi} %")
 
 def read_values(sensor):  

@@ -3,7 +3,7 @@ let dane_testowe = [
     "temperature": 21.5,
     "humidity": 45.2,
     "measured_at": "2026-11-23T17:30:00"
-  },
+  }, 
   {
     "temperature": 21.7,
     "humidity": 44.8,
@@ -118,50 +118,73 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const ctx = document.getElementById('myChart');
 const myChart = new Chart(ctx, {
-  type: "line",
-  data: {
-    labels: dane_testowe.map(item => item.measured_at),
-    datasets: [{
-      data: dane_testowe.map(item => item.temperature),
-      borderColor: "red",
-      fill: false
-    },]
-  },
-  options: {
-    plugins: {
-      legend: {
-        display: true,
-      },
-      title: {
-        text:"Wykres temperatury i wilgotności względem czasu",
-        display: true
-      }
-    },
-    scales: {
-      x: {  
-        type: 'time',
-        time: {
-            unit: 'hour',
-            displayFormats: {
-                hour:'HH:mm',
-                day: 'dd.MM'
+    type: "line",
+    data: {
+        labels: [],
+        datasets: [{
+            label: "Temperatura (°C)",
+            borderColor: "red",
+            backgroundColor: "rgba(255,0,0, 0.1)",
+            data: [],
+            borderColor: "red",
+            fill: false,
+            yAxisID: 'y1'
             },
-            tooltipFormat: 'dd.MM.yyyy HH:mm'
-        },
-        title: {
-            display: true,
-            text: 'Data i godzina'
-        }
+            {
+            label: "Wilgotność (%)",
+            borderColor: "blue",
+            backgroundColor: "rgba(0,0,255,0.1)",
+            data: [],
+            borderColor:"blue",
+            fill: false,
+            yAxisID: 'y2'
+            }]
     },
-    y: {
-      title: {
-        display: true,
-        text: "temperatura"
-      }
-    }
+    options: {
+        plugins: {
+            legend: {
+                display: true,
+            },
+            title: {
+                text:"Wykres temperatury i wilgotności względem czasu",
+                display: true
+            }
+        },
+        scales: {
+            x: {  
+                type: 'time',
+                time: {
+                    unit: 'hour',
+                    displayFormats: {
+                        hour:'HH:mm',
+                        day: 'dd.MM'
+                    },
+                },
+                title: {
+                    display: true,
+                    text: 'Data i godzina'
+                }
+            },
+            y1: {
+                type: 'linear',
+                position: 'left',
+                title: {
+                    display: true,
+                    text: "Temperatura"
+                }
+            },
+            y2: {
+                type: 'linear',
+                position: 'right',
+                title: {
+                    display: true,
+                    text: "Wilgotnośc"
+                }
+            }
 
+
+        }
     }
-  }
 });
 
 async function getChartData(query_param=1){ 
@@ -174,10 +197,14 @@ async function getChartData(query_param=1){
         });
         if (response.ok) {
             const data = await response.json();
-            let temperature = data.map(item => item.temperature);
-            let humidity = data.map(item => item.humidity);
-            let dates = data.map(item=>item.measured_at);
-
+            let temperature = data.map(row => row.temperature);
+            let humidity = data.map(row => row.humidity);
+            let dates = data.map(row => row.measured_at);
+            myChart.data.labels = dates;
+            myChart.data.datasets[0].data = temperature;
+            myChart.data.datasets[1].data = humidity;
+            myChart.options.scales.x.time.unit = query_param == 1 ? 'hour' : 'day'; 
+            myChart.update()
             
         } else {
             throw new Error(`Błąd HTTP: ${response.status}`);
