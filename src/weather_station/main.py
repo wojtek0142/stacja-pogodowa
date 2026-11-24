@@ -52,7 +52,7 @@ def home(request: Request, db: Annotated[Session, Depends(get_db)]):
     if latest:
         dew_point = calc_dew_point(latest)
         avg_temp, avg_hum = calc_avg(hour_before_avg)
-        if latest.temperature >= 10:
+        if latest.temperature >= 30:
              alert= True
         if avg_temp is not None and avg_hum is not None:
             temp_trend = latest.temperature - avg_temp
