@@ -1,6 +1,8 @@
 
 from collections.abc import Sequence
-from fastapi import Depends, FastAPI, Query, Request, HTTPException, status
+import csv
+import io
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from datetime import datetime, timezone,timedelta, UTC
@@ -12,6 +14,7 @@ from sqlalchemy.orm import Session
 from .models import Measurement 
 from .database import Base, engine, get_db
 from math import log
+import requests
 
 
 Base.metadata.create_all(bind=engine)
@@ -20,7 +23,7 @@ app = FastAPI()
 
 templates = Jinja2Templates(directory= Path(__file__).parent / "templates")
 app.mount("/static", StaticFiles(directory= Path(__file__).parent / "static"), name="static")
-
+URL = ""
 
 @app.get("/", include_in_schema=False)
 def home(request: Request, db: Annotated[Session, Depends(get_db)]):
@@ -45,10 +48,12 @@ def home(request: Request, db: Annotated[Session, Depends(get_db)]):
         select(Measurement).where(Measurement.measured_at >= start).where(Measurement.measured_at <= end)
     )
     hour_before_avg = hour_before.scalars().all()
-
+    alert = False
     if latest:
         dew_point = calc_dew_point(latest)
         avg_temp, avg_hum = calc_avg(hour_before_avg)
+        if latest.temperature >= 10:
+             alert= True
         if avg_temp is not None and avg_hum is not None:
             temp_trend = latest.temperature - avg_temp
             humidity_trend = latest.humidity - avg_hum
@@ -56,7 +61,7 @@ def home(request: Request, db: Annotated[Session, Depends(get_db)]):
             latest.measured_at = latest.measured_at.replace(tzinfo=UTC)
         measured_time = int(latest.measured_at.timestamp() * 1000)
     
-    return templates.TemplateResponse(request, "index.html", {"measurements": latest, "dew_point":dew_point, "measured_at": measured_time, "temperature_stats": temperature_stats, "humidity_stats": humidity_stats, "temp_trend":temp_trend, "humidity_trend": humidity_trend})
+    return templates.TemplateResponse(request, "index.html", {"measurements": latest, "dew_point":dew_point, "measured_at": measured_time, "temperature_stats": temperature_stats, "humidity_stats": humidity_stats, "temp_trend":temp_trend, "humidity_trend": humidity_trend, "alert": alert})
 
 
 @app.get("/api/measurements/", response_model=list[ReadingBase])
@@ -67,6 +72,60 @@ def get_readings(days: int,db: Annotated[Session, Depends(get_db)]):
         .order_by(Measurement.measured_at.asc())
     )
     return result.scalars().all()
+
+@app.get("/api/external/")
+def services_data():
+    url_meteo = "https://danepubliczne.imgw.pl/api/data/meteo/"
+    url_open_meteo="https://api.open-meteo.com/v1/forecast?latitude=50.0614&longitude=19.9366&current=temperature_2m,relative_humidity_2m&timezone=Europe%2FBerlin"
+    stacje_krakow = ["350190566","250190470","250190390","250190930"]
+    try:
+        response_meteo = requests.get(url_meteo, timeout=10)
+        response = response_meteo.json()
+        stations = [stacja for stacja in response if stacja["kod_stacji"] in stacje_krakow]
+    except requests.RequestException as e:
+        raise HTTPException(status_code=502, detail=f"Błąd IMGW: {e}")
+    try:
+        response_open_meteo = requests.get(url_open_meteo, timeout=10)
+        response_2 = response_open_meteo.json()
+    except requests.RequestException as e:
+        raise HTTPException(status_code=502, detail=f"Błąd Open-Meteo: {e}")
+    send = {}
+    for station in stations:
+        name = station["nazwa_stacji"].split("-")[1]
+        temperature = station["temperatura_powietrza"]
+        humidity = station["wilgotnosc_wzgledna"]
+        time = parse_date(station["temperatura_powietrza_data"])
+        send[name] = {}
+        send[name]["temperature"] = temperature
+        send[name]["humidity"] = humidity
+        send[name]["time"] = time
+    send["Open-Meteo.com Krakow"] = {}
+    send["Open-Meteo.com Krakow"]["time"] = parse_date(response_2["current"]["time"])
+    send["Open-Meteo.com Krakow"]["humidity"] = response_2["current"]["relative_humidity_2m"]
+    send["Open-Meteo.com Krakow"]["temperature"] = response_2["current"]["temperature_2m"]
+    return send    
+    
+
+@app.get("/csv")
+def download_csv(db: Session = Depends(get_db)):
+    measurements = db.execute(select(Measurement)).scalars().all()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["temperature", "humidity", "measured_at"])
+
+    for measurement in measurements:
+        writer.writerow([measurement.temperature, measurement.humidity, measurement.measured_at])
+    csv_content = output.getvalue()
+    return Response(
+         content=csv_content,
+         media_type ="text/csv",
+         headers={
+              "Content-Disposition": 'attachment; filename="readings.csv"'
+         }
+    )
+
+
+
 
 
 def calc_dew_point(latest: Measurement) -> float:
@@ -106,3 +165,6 @@ def calc_avg(hour_before_avg):
     avg_temp = round(sum(temperatures)/len(temperatures),2)
     avg_hum = round(sum(humidities)/len(humidities),2)
     return avg_temp, avg_hum
+
+def parse_date(timestamp):
+    return datetime.fromisoformat(timestamp).strftime("%H:%M")

@@ -1,105 +1,3 @@
-let dane_testowe = [
-  {
-    "temperature": 21.5,
-    "humidity": 45.2,
-    "measured_at": "2026-11-23T17:30:00"
-  }, 
-  {
-    "temperature": 21.7,
-    "humidity": 44.8,
-    "measured_at": "2026-11-23T16:30:00"
-  },
-  {
-    "temperature": 22.1,
-    "humidity": 43.5,
-    "measured_at": "2026-11-23T15:30:00"
-  },
-  {
-    "temperature": 22.4,
-    "humidity": 42.9,
-    "measured_at": "2026-11-23T14:30:00"
-  },
-  {
-    "temperature": 22.0,
-    "humidity": 44.1,
-    "measured_at": "2026-11-23T13:30:00"
-  },
-  {
-    "temperature": 21.8,
-    "humidity": 45.0,
-    "measured_at": "2026-11-23T12:30:00"
-  },
-  {
-    "temperature": 21.3,
-    "humidity": 46.2,
-    "measured_at": "2026-11-23T11:30:00"
-  },
-  {
-    "temperature": 20.9,
-    "humidity": 47.5,
-    "measured_at": "2026-11-23T10:30:00"
-  },
-  {
-    "temperature": 20.5,
-    "humidity": 48.1,
-    "measured_at": "2026-11-23T09:30:00"
-  },
-  {
-    "temperature": 20.2,
-    "humidity": 49.3,
-    "measured_at": "2026-11-23T08:30:00"
-  },
-  {
-    "temperature": 19.8,
-    "humidity": 50.2,
-    "measured_at": "2026-11-23T07:30:00"
-  },
-  {
-    "temperature": 19.5,
-    "humidity": 51.0,
-    "measured_at": "2026-11-23T06:30:00"
-  },
-  {
-    "temperature": 19.2,
-    "humidity": 52.4,
-    "measured_at": "2026-11-23T05:30:00"
-  },
-  {
-    "temperature": 19.0,
-    "humidity": 53.1,
-    "measured_at": "2026-11-23T04:30:00"
-  },
-  {
-    "temperature": 18.8,
-    "humidity": 54.0,
-    "measured_at": "2026-11-23T03:30:00"
-  },
-  {
-    "temperature": 18.5,
-    "humidity": 55.2,
-    "measured_at": "2026-11-23T02:30:00"
-  },
-  {
-    "temperature": 18.7,
-    "humidity": 54.8,
-    "measured_at": "2026-11-23T01:30:00"
-  },
-  {
-    "temperature": 19.1,
-    "humidity": 53.5,
-    "measured_at": "2026-11-23T00:30:00"
-  },
-  {
-    "temperature": 19.4,
-    "humidity": 52.1,
-    "measured_at": "2026-11-22T23:30:00"
-  },
-  {
-    "temperature": 19.8,
-    "humidity": 51.3,
-    "measured_at": "2026-11-22T22:30:00"
-  }
-]
 const refresh_badge = document.getElementById("last_update");
 const last_refresh = Number(refresh_badge.getAttribute("data-measured-at"));
 
@@ -111,9 +9,7 @@ function calculate_time_diff(){
 
 calculate_time_diff();
 setInterval(calculate_time_diff, 10000);
-document.addEventListener('DOMContentLoaded', () => {
-    getChartData(1);
-});
+
 
 
 const ctx = document.getElementById('myChart');
@@ -178,7 +74,7 @@ const myChart = new Chart(ctx, {
                 position: 'right',
                 title: {
                     display: true,
-                    text: "Wilgotnośc"
+                    text: "Wilgotność"
                 }
             }
 
@@ -214,6 +110,30 @@ async function getChartData(query_param=1){
     }
 }
 
+async function fetchAPIdata(){
+    try{
+        const response = await fetch("/api/external/");
+        if (!response.ok){
+            throw new Error(`HTTP error: ${response.status}`);
+        }
+        const data = await response.json();
+        let odczyt = Object.entries(data);
+        let tbody = document.getElementById("table-body");
+        tbody.replaceChildren();
+        for (let [name, readings] of odczyt){
+            let tr = document.createElement("tr");
+            for (let r of [name, readings.temperature ?? "-", readings.humidity ?? "-", readings.time ?? "-"]){
+                let td = document.createElement("td");
+                td.textContent = r;
+                tr.appendChild(td);
+            }
+            tbody.appendChild(tr);
+        }
+    } catch (error) {
+        console.error(`Wystąpił błąd podczas pobierania danych: ${error}`)
+    }
+}
+
 
 const range_buttons = document.querySelectorAll(".range");
 range_buttons.forEach(button => {
@@ -223,4 +143,5 @@ range_buttons.forEach(button => {
     });
 });
 
-
+getChartData(1);
+fetchAPIdata();

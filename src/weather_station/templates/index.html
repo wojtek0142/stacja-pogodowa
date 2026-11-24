@@ -22,7 +22,9 @@
                     <span id="last_update" class="badge text-bg-secondary" data-measured-at="{{measured_at}}"></span>
                 </div>
                 <div class="col-4 text-end">
-                    <button type="button" class="btn btn-primary">Pobierz csv</button>
+                    <a href="/csv" class="btn btn-primary">
+                        Pobierz csv
+                    </a>
                 </div>
             </div>
         </div>
@@ -35,7 +37,11 @@
                                 <div class="card-body">
                                     <h5 class="card-title">Temperatura</h5>
                                     {% if measurements %}
-                                        <h3 class="card-text">{{ measurements.temperature }} °C</h3>
+                                        {% if alert %}
+                                            <h3 class="card-text odczyt1" style="color: red">{{ measurements.temperature }} °C</h3>
+                                        {% else %}
+                                            <h3 class="card-text odczyt1">{{ measurements.temperature }} °C</h3>
+                                        {% endif %}
                                     {% else %}
                                         <h3 class="card-text">Brak danych</h3>
                                     {% endif %}
@@ -62,11 +68,7 @@
                                 {% else %}
                                     <span>Brak danych</span>
                                 {% endif %}
-                                <img src="{{ url_for('static', path='icons/arrow-up-right.svg') }}"
-                                    alt="Arrow up"
-                                    height="30"
-                                    width="30"
-                                />
+            
                             </div>
                         </div>
                     </div>
@@ -105,11 +107,6 @@
                                 {% else %}
                                     <span>Brak danych</span>
                                 {% endif %}
-                                <img src="{{ url_for('static', path='icons/arrow-down-right.svg') }}"
-                                    alt="Arrow down"
-                                    height="30"
-                                    width="30"
-                                />
                             </div>
                         </div>
                     </div>
@@ -170,7 +167,52 @@
             <button type="button" class="range btn btn-primary" data-range="1">24H</button>
             <button type="button" class="range btn btn-primary" data-range="7">7 dni</button>
         </div>
-        <canvas id="myChart" style="width:100%;max-width:700px"></canvas>
+        <div class="container my-5">
+            <div class="row">
+                <div class="col-lg-6">
+                    <canvas id="myChart" style="width:100%;max-width:700px"></canvas>
+                </div>
+                <div class="col-lg-6">
+                    <table class="table" id="weather-table">
+                        <thead>   
+                            <tr>
+                                <th>Źródło</th>
+                                <th>Temperatura [°C]</th>
+                                <th>Wilgotność [%]</th>
+                                <th>Czas pomiaru</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <tr>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                             <tr>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                             <tr>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                        </tbody> 
+                    </table>
+                </div>
+            </div>
+        </div>
+        
 
 
 

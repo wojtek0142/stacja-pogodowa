@@ -12,9 +12,9 @@ lcd = JHD1802()
 def print_lcd(temp: float, humi: float, lcd):
     lcd.clear()
     lcd.backlight(True)
-    lcd.setCursor(0, 0)
+    lcd.home()
     lcd.write(f"Temp: {temp} C")
-    lcd.setCursor(0,1)
+    lcd.setCursor(1,0)
     lcd.write(f"Wilgotnosc: {humi} %")
 
 def read_values(sensor):  
